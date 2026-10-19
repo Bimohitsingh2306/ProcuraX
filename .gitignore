@@ -1,0 +1,14 @@
+target/
+.idea/
+*.iml
+out/
+logs/
+*.log
+.env
+.env.*
+!.env.example
+application-local.properties
+application-prod.properties
+secrets/
+
+src/main/java/org/
