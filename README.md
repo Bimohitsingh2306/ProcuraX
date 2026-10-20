@@ -57,38 +57,53 @@ The project demonstrates enterprise backend development concepts, including JWT-
 
 ## 3. Architecture
 
-ProcuraX follows a layered Spring Boot architecture.
 
-```text
-                    Client Applications
-                  (Postman / Swagger UI)
-                            |
-                            v
-                     REST Controllers
-                            |
-                            v
-                      Service Layer
-                 (Business Logic & Rules)
-                            |
-                  +---------+---------+
-                  |                   |
-                  v                   v
-             Repositories         Redis Cache
-                  |
-                  v
-              Hibernate
-                  |
-                  v
-                MySQL
+ProcuraX follows a layered Spring Boot architecture that separates API handling, business logic, data access, security, and supporting infrastructure.
 
-    Cross-cutting Components:
-    Spring Security + JWT
-    DTOs + Bean Validation
-    Global Exception Handling
-    Audit Logging
-    Actuator + Application Logging
+```mermaid
+flowchart TB
+    A["Client Applications<br/>Postman / Swagger UI"]
+    B["Spring Security<br/>JWT Authentication & Authorization"]
+    C["REST Controllers<br/>API Endpoints"]
+    D["DTOs & Bean Validation"]
+    E["Service Layer<br/>Business Logic"]
+    F["Spring Data JPA Repositories"]
+    G["JPA / Hibernate"]
+    H[("MySQL Database<br/>supplyguard_db")]
+
+    I[("Redis / Memurai Cache")]
+    J["Audit Logging Service"]
+    K["Global Exception Handler"]
+    L["Spring Boot Actuator<br/>Monitoring & Logging"]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+
+    E <--> I
+    E --> J
+    J --> F
+
+    C -. Errors .-> K
+    L -. Monitoring .-> E
+
+    style A fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    style B fill:#dcfce7,stroke:#16a34a,color:#14532d
+    style C fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+    style D fill:#cffafe,stroke:#0891b2,color:#164e63
+    style E fill:#ffedd5,stroke:#ea580c,color:#9a3412
+    style F fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    style G fill:#f3e8ff,stroke:#9333ea,color:#581c87
+    style H fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    style I fill:#ccfbf1,stroke:#0d9488,color:#134e4a
+    style J fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+    style K fill:#fee2e2,stroke:#dc2626,color:#991b1b
+    style L fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
 ```
-
 ### Main package responsibilities
 
 - `config` — application configuration and OpenAPI setup.
