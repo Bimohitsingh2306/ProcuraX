@@ -287,48 +287,90 @@ java -jar target/procuraX-0.0.1-SNAPSHOT.jar
 The default application port is `8080`, unless overridden by configuration.
 
 ---
-
 ## 10. Docker Deployment
 
-ProcuraX has been packaged into a Docker image and its Products and Dashboard APIs have been tested successfully through the container.
+ProcuraX has been packaged into a Docker image. The Products and Dashboard APIs have been tested successfully through the running container.
 
-### Build the image
+### Prerequisites
 
-From the project root, where the `Dockerfile` is located:
+Before running ProcuraX in Docker, ensure that you have:
+
+- Docker Desktop installed and running.
+- MySQL running on the Windows host with the `supplyguard_db` database configured.
+- Memurai or another Redis-compatible service running on the Windows host.
+- Valid database credentials and a secure JWT secret configured locally.
+
+### Build the Docker Image
+
+Run the following command from the project root directory, where the `Dockerfile` is located:
 
 ```bash
 docker build -t procurax:1.0 .
 ```
 
-### Start the container
+### Configure Environment Variables
 
-The current local setup maps host port `8081` to container port `8080`:
+Create a local `.env` file in the project root directory. Add your own credentials and a unique JWT secret of at least 32 bytes:
 
-```bash
-docker run -d --name procurax-app -p 8081:8080 --add-host=host.docker.internal:host-gateway -e SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/supplyguard_db -e SPRING_DATA_REDIS_HOST=host.docker.internal procurax:1.0
+```dotenv
+DB_USERNAME=root
+DB_PASSWORD=your_actual_mysql_password
+JWT_SECRET=replace_with_your_private_secret
 ```
 
-This command assumes that MySQL and Redis-compatible services are reachable from the Docker container on the Windows host and that valid credentials are already available to the application.
+Replace the example values with your actual local configuration. Never commit this file to GitHub or share it publicly.
 
-### Verify the container
+### Start the Container
+
+The following command maps host port `8081` to container port `8080` and connects the container to MySQL and Memurai running on the Windows host:
+
+```bash
+docker run -d \
+  --name procurax-app \
+  -p 8081:8080 \
+  --add-host=host.docker.internal:host-gateway \
+  --env-file .env \
+  -e DB_URL=jdbc:mysql://host.docker.internal:3306/supplyguard_db \
+  -e REDIS_HOST=host.docker.internal \
+  procurax:1.0
+```
+
+**Note:** This configuration assumes that MySQL and Memurai are running on the host and accepting connections. The database credentials and JWT secret must match the environment variables expected by the application.
+
+### Verify the Container
+
+Check whether the container is running:
 
 ```bash
 docker ps
+```
+
+View the container logs:
+
+```bash
 docker logs --tail 100 procurax-app
 ```
 
-### Test the container API
+### Test the Container APIs
 
-```text
-http://localhost:8081/api/products
-http://localhost:8081/api/dashboard/summary
+Open the following URLs in your browser or test them using Postman:
+
+- Products API: `http://localhost:8081/api/products`
+- Dashboard Summary API: `http://localhost:8081/api/dashboard/summary`
+
+Use a valid JWT bearer token for protected endpoints.
+
+### Stop and Remove the Container
+
+```bash
+docker stop procurax-app
+docker rm procurax-app
 ```
 
-Use a valid JWT for protected endpoints.
+### Production Considerations
 
-For a production deployment, configure secrets securely, use persistent and managed data services, define health checks, and consider Docker Compose or an orchestration platform.
+For production deployment, use a managed database and Redis service, store secrets in a secure secrets manager, configure health checks and persistent storage where required, and consider Docker Compose or an orchestration platform.
 
----
 
 ## 11. Testing
 
